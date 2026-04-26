@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final Exam Required Mark Calculator</title>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-hover: #3a53cc;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-main: #2b2d42;
+            --text-muted: #6c757d;
+            --border: #dee2e6;
+            --border-radius: 8px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+
+        select, input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 25px;
+            background: var(--bg);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border);
+        }
+
+        .radio-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .radio-group input[type="radio"] {
+            width: auto;
+            cursor: pointer;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .section-title {
+            margin: 25px 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--bg);
+            font-size: 1.2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Coursework rows */
+        .cw-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 15px;
+            align-items: end;
+            margin-bottom: 15px;
+            background: var(--bg);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .cw-row:hover {
+            border-color: #ced4da;
+        }
+
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            width: 100%;
+            padding: 12px;
+            font-size: 1.1rem;
+            margin-top: 20px;
+        }
+
+        .btn-primary:hover { background-color: var(--primary-hover); }
+
+        .btn-secondary {
+            background-color: var(--bg);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover { background-color: #e2e6ea; }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+            height: 43px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-danger:hover { background-color: #c0392b; }
+        
+        .actions-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .actions-group .btn-primary { margin-top: 0; flex: 3; }
+        .actions-group .btn-secondary { margin-top: 0; flex: 1; }
+
+        /* Real-time validation indicators */
+        .validation-msg {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+        .text-danger { color: var(--danger); }
+        .text-success { color: var(--success); }
+
+        /* Results section */
+        #resultSection {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            display: none;
+        }
+
+        .result-success {
+            background-color: rgba(46, 204, 113, 0.1);
+            border: 2px solid var(--success);
+            color: #27ae60;
+        }
+
+        .result-warning {
+            background-color: rgba(243, 156, 18, 0.1);
+            border: 2px solid var(--warning);
+            color: #d35400;
+        }
+
+        .result-danger {
+            background-color: rgba(231, 76, 60, 0.1);
+            border: 2px solid var(--danger);
+            color: #c0392b;
+        }
+
+        .result-mark {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 650px) {
+            .grid-2 { grid-template-columns: 1fr; gap: 10px; }
+            .cw-row {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            .btn-danger { height: auto; padding: 10px; }
+            .mode-selector { flex-direction: column; gap: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Final Exam Required Mark Calculator</h1>
+
+    <div class="form-group">
+        <label for="targetGrade">Select Target Grade</label>
+        <select id="targetGrade">
+            <option value="90">A+ (90 - 100%)</option>
+            <option value="80">A (80 - 89%)</option>
+            <option value="75">A- (75 - 79%)</option>
+            <option value="70">B+ (70 - 74%)</option>
+            <option value="65">B (65 - 69%)</option>
+            <option value="60">B- (60 - 64%)</option>
+            <option value="55">C+ (55 - 59%)</option>
+            <option value="50">C (50 - 54%)</option>
+        </select>
+    </div>
+
+    <label>Calculation Mode</label>
+    <div class="mode-selector">
+        <label class="radio-group">
+            <input type="radio" name="mode" value="flexible" checked onchange="toggleMode()">
+            Flexible Ratio Mode
+        </label>
+        <label class="radio-group">
+            <input type="radio" name="mode" value="fixed" onchange="toggleMode()">
+            Fixed Syllabus Mode
+        </label>
+    </div>
+
+    <div id="flexibleConfig" class="grid-2">
+        <div class="form-group">
+            <label for="flexExamRatio">Final Exam Ratio (%)</label>
+            <input type="number" id="flexExamRatio" value="50" min="1" max="99" oninput="validateFlexibleRatios()">
+        </div>
+        <div class="form-group">
+            <label for="flexCwRatio">Coursework Ratio (%)</label>
+            <input type="number" id="flexCwRatio" value="50" min="1" max="99" oninput="validateFlexibleRatios()">
+        </div>
+    </div>
+    <div id="flexRatioValidation" class="validation-msg text-success" style="margin-top: -10px; margin-bottom: 15px;">
+        Total Ratio: 100%
+    </div>
+
+    <div id="fixedConfig" class="form-group" style="display: none;">
+        <label for="fixedExamWeight">Final Exam Weight (%)</label>
+        <input type="number" id="fixedExamWeight" value="40" min="1" max="99" oninput="validateCourseworkWeights()">
+    </div>
+
+    <div class="section-title">
+        <span>Coursework Components</span>
+        <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.9rem;" onclick="addCourseworkComponent()">+ Add Component</button>
+    </div>
+    
+    <div id="cwValidation" class="validation-msg text-danger" style="margin-bottom: 15px;"></div>
+
+    <div id="courseworkContainer">
+        </div>
+
+    <div class="actions-group">
+        <button class="btn btn-secondary" onclick="resetForm()">Reset</button>
+        <button class="btn btn-primary" onclick="calculateRequiredMark()">Calculate Required Mark</button>
+    </div>
+
+    <div id="resultSection">
+        <h3 id="resultTitle">Result</h3>
+        <div id="resultMark" class="result-mark">--</div>
+        <p id="resultMessage">--</p>
+    </div>
+
+</div>
+
+<script>
+    // Initial setup on load
+    document.addEventListener("DOMContentLoaded", () => {
+        addCourseworkComponent('Assignment', 30, 0);
+        addCourseworkComponent('Midterm', 20, 0);
+        validateFlexibleRatios();
+        validateCourseworkWeights();
+    });
+
+    // --- Dynamic UI Management ---
+    function toggleMode() {
+        const mode = document.querySelector('input[name="mode"]:checked').value;
+        const flexConfig = document.getElementById('flexibleConfig');
+        const fixedConfig = document.getElementById('fixedConfig');
+        const flexValidation = document.getElementById('flexRatioValidation');
+        
+        if (mode === 'flexible') {
+            flexConfig.style.display = 'grid';
+            flexValidation.style.display = 'block';
+            fixedConfig.style.display = 'none';
+        } else {
+            flexConfig.style.display = 'none';
+            flexValidation.style.display = 'none';
+            fixedConfig.style.display = 'block';
+        }
+        
+        validateCourseworkWeights();
+        hideResult();
+    }
+
+    function addCourseworkComponent(name = '', weight = '', marks = '') {
+        const container = document.getElementById('courseworkContainer');
+        const rowId = `cw-${Date.now()}-${Math.floor(Math.random() * 100)}`;
+        
+        const rowHtml = `
+            <div class="cw-row" id="${rowId}">
+                <div class="form-group" style="margin:0;">
+                    <label>Component Name</label>
+                    <input type="text" class="cw-name" placeholder="e.g. Assignment 1" value="${name}">
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label>Weight (%)</label>
+                    <input type="number" class="cw-weight" placeholder="0-100" min="0" max="100" value="${weight}" oninput="validateCourseworkWeights()">
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label>Obtained (%)</label>
+                    <input type="number" class="cw-obtained" placeholder="0-100" min="0" max="100" value="${marks}" oninput="validateInputBounds(this)">
+                </div>
+                <button class="btn btn-danger" onclick="removeCourseworkComponent('${rowId}')" title="Remove Component">✕</button>
+            </div>
+        `;
+        
+        container.insertAdjacentHTML('beforeend', rowHtml);
+        validateCourseworkWeights();
+    }
+
+    function removeCourseworkComponent(rowId) {
+        document.getElementById(rowId).remove();
+        validateCourseworkWeights();
+    }
+
+    // --- Validation Logic ---
+    function validateInputBounds(inputElement) {
+        let val = parseFloat(inputElement.value);
+        if (val < 0) inputElement.value = 0;
+        if (val > 100) inputElement.value = 100;
+    }
+
+    function validateFlexibleRatios() {
+        const examRatio = parseFloat(document.getElementById('flexExamRatio').value) || 0;
+        const cwRatio = parseFloat(document.getElementById('flexCwRatio').value) || 0;
+        const total = examRatio + cwRatio;
+        const validationEl = document.getElementById('flexRatioValidation');
+
+        if (total === 100) {
+            validationEl.textContent = `Overall Ratios total: ${total}%`;
+            validationEl.className = 'validation-msg text-success';
+            return true;
+        } else {
+            validationEl.textContent = `Error: Final Exam + Coursework ratios must equal 100%. Current total: ${total}%`;
+            validationEl.className = 'validation-msg text-danger';
+            return false;
+        }
+    }
+
+    function validateCourseworkWeights() {
+        const mode = document.querySelector('input[name="mode"]:checked').value;
+        const weights = document.querySelectorAll('.cw-weight');
+        let cwTotalWeight = 0;
+        
+        weights.forEach(input => {
+            cwTotalWeight += parseFloat(input.value) || 0;
+        });
+
+        const validationEl = document.getElementById('cwValidation');
+        
+        if (mode === 'flexible') {
+            if (cwTotalWeight === 100) {
+                validationEl.textContent = `Coursework Components Weights total: 100%`;
+                validationEl.className = 'validation-msg text-success';
+                return true;
+            } else {
+                validationEl.textContent = `Error: Coursework components weights must equal 100%. Current total: ${cwTotalWeight}%`;
+                validationEl.className = 'validation-msg text-danger';
+                return false;
+            }
+        } else {
+            // Fixed Mode
+            const examWeight = parseFloat(document.getElementById('fixedExamWeight').value) || 0;
+            const absoluteTotal = examWeight + cwTotalWeight;
+            
+            if (absoluteTotal === 100) {
+                validationEl.textContent = `Total Syllabus Weights (Exam + Coursework): 100%`;
+                validationEl.className = 'validation-msg text-success';
+                return true;
+            } else {
+                validationEl.textContent = `Error: Final Exam + all coursework weights must equal 100%. Current total: ${absoluteTotal}%`;
+                validationEl.className = 'validation-msg text-danger';
+                return false;
+            }
+        }
+    }
+
+    // --- Calculation Logic ---
+    function calculateRequiredMark() {
+        const targetGrade = parseFloat(document.getElementById('targetGrade').value);
+        const mode = document.querySelector('input[name="mode"]:checked').value;
+        
+        let examRatio = 0;
+        let courseworkContribution = 0;
+
+        // Perform Validations before calculating
+        if (mode === 'flexible') {
+            if (!validateFlexibleRatios()) {
+                showResult("Validation Error", "Please ensure Exam Ratio + Coursework Ratio equals 100.", "danger");
+                return;
+            }
+            if (!validateCourseworkWeights()) {
+                showResult("Validation Error", "Please ensure the sum of coursework weights equals 100%.", "danger");
+                return;
+            }
+
+            examRatio = parseFloat(document.getElementById('flexExamRatio').value);
+            const cwRatio = parseFloat(document.getElementById('flexCwRatio').value);
+            
+            let totalWeightedMarks = 0;
+            const rows = document.querySelectorAll('.cw-row');
+            
+            rows.forEach(row => {
+                const weight = parseFloat(row.querySelector('.cw-weight').value) || 0;
+                const marks = parseFloat(row.querySelector('.cw-obtained').value) || 0;
+                
+                // Flexible: Contribution within coursework section
+                totalWeightedMarks += (marks * (weight / 100));
+            });
+
+            // Scale to overall grade contribution
+            courseworkContribution = totalWeightedMarks * (cwRatio / 100);
+
+        } else {
+            // Fixed Syllabus Mode
+            if (!validateCourseworkWeights()) {
+                showResult("Validation Error", "Please ensure Exam Weight + all coursework weights equals 100%.", "danger");
+                return;
+            }
+
+            examRatio = parseFloat(document.getElementById('fixedExamWeight').value);
+            const rows = document.querySelectorAll('.cw-row');
+            
+            rows.forEach(row => {
+                const weight = parseFloat(row.querySelector('.cw-weight').value) || 0;
+                const marks = parseFloat(row.querySelector('.cw-obtained').value) || 0;
+                
+                // Fixed: Weight is absolute to the whole syllabus
+                courseworkContribution += (marks * (weight / 100));
+            });
+        }
+
+        // Edge Case: Division by Zero
+        if (examRatio <= 0) {
+            showResult("Error", "Final Exam ratio/weight must be greater than 0 to calculate an exam score.", "danger");
+            return;
+        }
+
+        // Calculate Formula: Required Exam Mark = (Target Grade - CW Contribution) / (Exam Ratio / 100)
+        const requiredExamMark = (targetGrade - courseworkContribution) / (examRatio / 100);
+
+        // Render Results
+        displayResults(requiredExamMark);
+    }
+
+    function displayResults(requiredMark) {
+        const resultSection = document.getElementById('resultSection');
+        const resultTitle = document.getElementById('resultTitle');
+        const resultMarkDisplay = document.getElementById('resultMark');
+        const resultMessage = document.getElementById('resultMessage');
+
+        resultSection.style.display = 'block';
+        
+        // Strip previous classes
+        resultSection.className = '';
+
+        if (requiredMark > 100) {
+            resultSection.classList.add('result-danger');
+            resultTitle.textContent = "Status";
+            resultMarkDisplay.textContent = requiredMark.toFixed(2) + "%";
+            resultMessage.textContent = "Impossible to achieve this grade.";
+        } else if (requiredMark <= 0) {
+            resultSection.classList.add('result-success');
+            resultTitle.textContent = "Status";
+            resultMarkDisplay.textContent = "0.00%";
+            resultMessage.textContent = "You have already secured this grade.";
+        } else {
+            resultSection.classList.add('result-warning');
+            resultTitle.textContent = "Target Action";
+            resultMarkDisplay.textContent = requiredMark.toFixed(2) + "%";
+            resultMessage.textContent = `You need at least ${requiredMark.toFixed(2)}% in the final exam.`;
+        }
+    }
+
+    function showResult(title, message, type) {
+        const resultSection = document.getElementById('resultSection');
+        resultSection.style.display = 'block';
+        resultSection.className = `result-${type}`;
+        
+        document.getElementById('resultTitle').textContent = title;
+        document.getElementById('resultMark').textContent = "--";
+        document.getElementById('resultMessage').textContent = message;
+    }
+
+    function hideResult() {
+        document.getElementById('resultSection').style.display = 'none';
+    }
+
+    function resetForm() {
+        document.getElementById('targetGrade').value = "90";
+        document.querySelector('input[name="mode"][value="flexible"]').checked = true;
+        
+        document.getElementById('flexExamRatio').value = "50";
+        document.getElementById('flexCwRatio').value = "50";
+        document.getElementById('fixedExamWeight').value = "40";
+        
+        document.getElementById('courseworkContainer').innerHTML = '';
+        addCourseworkComponent('Assignment', 30, 0);
+        addCourseworkComponent('Midterm', 20, 0);
+        
+        toggleMode();
+        validateFlexibleRatios();
+        validateCourseworkWeights();
+        hideResult();
+    }
+</script>
+
+</body>
+</html>

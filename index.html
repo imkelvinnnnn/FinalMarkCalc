@@ -34,7 +34,7 @@
         }
 
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
             background: var(--card-bg);
             padding: 30px;
@@ -58,6 +58,7 @@
             font-weight: 600;
             margin-bottom: 8px;
             color: var(--text-main);
+            font-size: 0.95rem;
         }
 
         select, input[type="number"], input[type="text"] {
@@ -113,10 +114,10 @@
             align-items: center;
         }
 
-        /* Coursework rows */
+        /* Coursework rows updated to fit the new column */
         .cw-row {
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr auto;
+            grid-template-columns: 1.5fr 1fr 1fr 1fr auto;
             gap: 15px;
             align-items: end;
             margin-bottom: 15px;
@@ -223,7 +224,7 @@
         }
 
         /* Responsive */
-        @media (max-width: 650px) {
+        @media (max-width: 768px) {
             .grid-2 { grid-template-columns: 1fr; gap: 10px; }
             .cw-row {
                 grid-template-columns: 1fr;
@@ -310,8 +311,9 @@
 <script>
     // Initial setup on load
     document.addEventListener("DOMContentLoaded", () => {
-        addCourseworkComponent('Assignment', 30, 0);
-        addCourseworkComponent('Midterm', 20, 0);
+        // Examples with arbitrary max marks
+        addCourseworkComponent('Assignment 1', 30, 0, 100);
+        addCourseworkComponent('Midterm', 20, 0, 50);
         validateFlexibleRatios();
         validateCourseworkWeights();
     });
@@ -337,7 +339,7 @@
         hideResult();
     }
 
-    function addCourseworkComponent(name = '', weight = '', marks = '') {
+    function addCourseworkComponent(name = '', weight = '', marks = '', maxMarks = '100') {
         const container = document.getElementById('courseworkContainer');
         const rowId = `cw-${Date.now()}-${Math.floor(Math.random() * 100)}`;
         
@@ -345,15 +347,19 @@
             <div class="cw-row" id="${rowId}">
                 <div class="form-group" style="margin:0;">
                     <label>Component Name</label>
-                    <input type="text" class="cw-name" placeholder="e.g. Assignment 1" value="${name}">
+                    <input type="text" class="cw-name" placeholder="e.g. Midterm" value="${name}">
                 </div>
                 <div class="form-group" style="margin:0;">
                     <label>Weight (%)</label>
                     <input type="number" class="cw-weight" placeholder="0-100" min="0" max="100" value="${weight}" oninput="validateCourseworkWeights()">
                 </div>
                 <div class="form-group" style="margin:0;">
-                    <label>Obtained (%)</label>
-                    <input type="number" class="cw-obtained" placeholder="0-100" min="0" max="100" value="${marks}" oninput="validateInputBounds(this)">
+                    <label>Mark Obtained</label>
+                    <input type="number" class="cw-obtained" placeholder="0" min="0" value="${marks}">
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label>Max Mark</label>
+                    <input type="number" class="cw-max" placeholder="100" min="1" value="${maxMarks}">
                 </div>
                 <button class="btn btn-danger" onclick="removeCourseworkComponent('${rowId}')" title="Remove Component">✕</button>
             </div>
@@ -369,12 +375,6 @@
     }
 
     // --- Validation Logic ---
-    function validateInputBounds(inputElement) {
-        let val = parseFloat(inputElement.value);
-        if (val < 0) inputElement.value = 0;
-        if (val > 100) inputElement.value = 100;
-    }
-
     function validateFlexibleRatios() {
         const examRatio = parseFloat(document.getElementById('flexExamRatio').value) || 0;
         const cwRatio = parseFloat(document.getElementById('flexCwRatio').value) || 0;
@@ -457,13 +457,15 @@
             
             rows.forEach(row => {
                 const weight = parseFloat(row.querySelector('.cw-weight').value) || 0;
-                const marks = parseFloat(row.querySelector('.cw-obtained').value) || 0;
+                const obtained = parseFloat(row.querySelector('.cw-obtained').value) || 0;
+                const maxMarks = parseFloat(row.querySelector('.cw-max').value) || 1; // Prevent div by 0
                 
-                // Flexible: Contribution within coursework section
-                totalWeightedMarks += (marks * (weight / 100));
+                // Calculate percentage achieved for this component, then apply its weight
+                const componentPercentage = obtained / maxMarks; 
+                totalWeightedMarks += (componentPercentage * weight);
             });
 
-            // Scale to overall grade contribution
+            // Scale to overall grade contribution based on coursework ratio
             courseworkContribution = totalWeightedMarks * (cwRatio / 100);
 
         } else {
@@ -478,10 +480,12 @@
             
             rows.forEach(row => {
                 const weight = parseFloat(row.querySelector('.cw-weight').value) || 0;
-                const marks = parseFloat(row.querySelector('.cw-obtained').value) || 0;
+                const obtained = parseFloat(row.querySelector('.cw-obtained').value) || 0;
+                const maxMarks = parseFloat(row.querySelector('.cw-max').value) || 1;
                 
                 // Fixed: Weight is absolute to the whole syllabus
-                courseworkContribution += (marks * (weight / 100));
+                const componentPercentage = obtained / maxMarks;
+                courseworkContribution += (componentPercentage * weight);
             });
         }
 
@@ -492,7 +496,10 @@
         }
 
         // Calculate Formula: Required Exam Mark = (Target Grade - CW Contribution) / (Exam Ratio / 100)
-        const requiredExamMark = (targetGrade - courseworkContribution) / (examRatio / 100);
+        let requiredExamMark = (targetGrade - courseworkContribution) / (examRatio / 100);
+        
+        // Round off to ceiling
+        requiredExamMark = Math.ceil(requiredExamMark);
 
         // Render Results
         displayResults(requiredExamMark);
@@ -512,18 +519,18 @@
         if (requiredMark > 100) {
             resultSection.classList.add('result-danger');
             resultTitle.textContent = "Status";
-            resultMarkDisplay.textContent = requiredMark.toFixed(2) + "%";
+            resultMarkDisplay.textContent = requiredMark + "%";
             resultMessage.textContent = "Impossible to achieve this grade.";
         } else if (requiredMark <= 0) {
             resultSection.classList.add('result-success');
             resultTitle.textContent = "Status";
-            resultMarkDisplay.textContent = "0.00%";
+            resultMarkDisplay.textContent = "0%";
             resultMessage.textContent = "You have already secured this grade.";
         } else {
             resultSection.classList.add('result-warning');
             resultTitle.textContent = "Target Action";
-            resultMarkDisplay.textContent = requiredMark.toFixed(2) + "%";
-            resultMessage.textContent = `You need at least ${requiredMark.toFixed(2)}% in the final exam.`;
+            resultMarkDisplay.textContent = requiredMark + "%";
+            resultMessage.textContent = `You need at least ${requiredMark}% in the final exam.`;
         }
     }
 
@@ -550,8 +557,8 @@
         document.getElementById('fixedExamWeight').value = "40";
         
         document.getElementById('courseworkContainer').innerHTML = '';
-        addCourseworkComponent('Assignment', 30, 0);
-        addCourseworkComponent('Midterm', 20, 0);
+        addCourseworkComponent('Assignment 1', 30, 0, 100);
+        addCourseworkComponent('Midterm', 20, 0, 50);
         
         toggleMode();
         validateFlexibleRatios();

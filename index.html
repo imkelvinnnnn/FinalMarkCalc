@@ -269,11 +269,11 @@
     <div id="flexibleConfig" class="grid-2">
         <div class="form-group">
             <label for="flexExamRatio">Final Exam Ratio (%)</label>
-            <input type="number" id="flexExamRatio" value="50" min="1" max="99" oninput="validateFlexibleRatios()">
+            <input type="number" id="flexExamRatio" placeholder="0-100" min="1" max="99" oninput="validateFlexibleRatios()">
         </div>
         <div class="form-group">
             <label for="flexCwRatio">Coursework Ratio (%)</label>
-            <input type="number" id="flexCwRatio" value="50" min="1" max="99" oninput="validateFlexibleRatios()">
+            <input type="number" id="flexCwRatio" placeholder="0-100" min="1" max="99" oninput="validateFlexibleRatios()">
         </div>
     </div>
     <div id="flexRatioValidation" class="validation-msg text-success" style="margin-top: -10px; margin-bottom: 15px;">
@@ -312,7 +312,7 @@
     // Initial setup on load
     document.addEventListener("DOMContentLoaded", () => {
         // Examples with arbitrary max marks
-        addCourseworkComponent('Assignment 1', 30, 0, 100);
+        addCourseworkComponent('Assignment', 30, 0, 100);
         addCourseworkComponent('Midterm', 20, 0, 50);
         validateFlexibleRatios();
         validateCourseworkWeights();
